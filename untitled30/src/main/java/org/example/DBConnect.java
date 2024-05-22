@@ -38,7 +38,7 @@ public class DBConnect {
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1); // Vrací ID nově vloženého čipu
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -55,7 +55,7 @@ public class DBConnect {
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1); // Vrací ID nově vloženého zaměstnance
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
