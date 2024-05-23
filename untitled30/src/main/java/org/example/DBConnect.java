@@ -1,6 +1,7 @@
 package org.example;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DBConnect {
     private static String url = "jdbc:sqlite:employeeSystem.db";
@@ -30,14 +31,15 @@ public class DBConnect {
         executeSQL(sqlChips);
     }
 
-    public static int insertChip(String date) {
+    public static int insertChip(String old) {
         String sql = "INSERT INTO Chip(old) VALUES(?)";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, date);
+            pstmt.setString(1, old);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
+                System.out.println("Chip inserted with ID: " + rs.getInt(1));
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
@@ -55,7 +57,8 @@ public class DBConnect {
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1);
+                System.out.println("Employee inserted with ID: " + rs.getInt(1));
+                return rs.getInt(1); // Vrací ID nově vloženého zaměstnance
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -70,6 +73,7 @@ public class DBConnect {
             pstmt.setInt(1, idChip);
             pstmt.setInt(2, idEmployee);
             pstmt.executeUpdate();
+            System.out.println("Chip " + idChip + " assigned to employee " + idEmployee);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -98,37 +102,55 @@ public class DBConnect {
         }
     }
 
-    public static void insertEmployeeWithChip(String name, String chipDate, String chipCode) {
-        int employeeId = insertEmployee(name, chipCode);
+    public static void insertEmployeeWithChip(Employee employee) {
+        int employeeId = insertEmployee(employee.getName(), employee.getChipCode());
         if (employeeId != -1) {
-            int chipId = insertChip(chipDate);
+            int chipId = insertChip(employee.getChipDate());
             if (chipId != -1) {
                 addChipToEmployee(employeeId, chipId);
-                System.out.println("zaměstnanec je přdán");
+                System.out.println("Zaměstnanec je přidán");
             } else {
-                System.out.println("chyba ");
+                System.out.println("Chyba při vkládání čipu");
             }
         } else {
-            System.out.println("chuba");
+            System.out.println("Chyba při vkládání zaměstnance");
         }
     }
 
-    public static void printAllEmployees() {
-        String sql = "SELECT * FROM Employees";
+    public Employee getEmployeeByChipCode(String chipCode) {
+        String sql = "SELECT * FROM Employees WHERE chipCode = ?";
         try (Connection conn = connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            System.out.println("tabulka zaměstnanců:");
-            while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("idPerson") +
-                        ", Name: " + rs.getString("name") +
-                        ", ID Chip: " + rs.getInt("idChip") +
-                        ", Chip Code: " + rs.getString("chipCode"));
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, chipCode);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                System.out.println("Zaměstnanec nalezen: " + rs.getString("name"));
+                return new Employee(rs.getString("name"), rs.getString("idChip"), rs.getString("chipCode"));
+            } else {
+                System.out.println("Zaměstnanec s kódem čipu " + chipCode + " nenalezen.");
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return null;
     }
+
+    public ArrayList<Employee> getAllEmployees() {
+        String sql = "SELECT * FROM Employees";
+        try (Connection conn = connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            ArrayList<Employee> employees = new ArrayList<>();
+            while (rs.next()) {
+                employees.add(new Employee(rs.getString("name"), rs.getString("idChip"), rs.getString("chipCode")));
+            }
+            return employees;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
     public static void printAllChips() {
         String sql = "SELECT * FROM Chip";
         try (Connection conn = connect();
@@ -143,24 +165,8 @@ public class DBConnect {
             System.out.println(e.getMessage());
         }
     }
-
-    public static void main(String[] args) {
-        createNewTable();
-
-        insertEmployeeWithChip("Honza", "2023-12-12", "1234");
-        insertEmployeeWithChip("Karel", "2024-01-01", "5678");
-        insertEmployeeWithChip("Franta", "2024-02-02", "91011");
-
-        System.out.println("\nAll Employees:");
-        printAllEmployees();
-
-        System.out.println("\nAll Chips:");
-        printAllChips();
-
-        System.out.println("\nChip ages:");
-        readNotes();
-    }
 }
+
 
 // tohle je na mě už vážne moc já to nezzládám prosím pomoc 5 hodin to tu nějak dělám a pořád nějaké errory udělám jednu část a potom na mě vyleze 5 nových erororů hmm to je fakt sranda ani tan chatgpt to necápe co má asi tak dělat proč tohle vůbec píšu já jsem asi vážně zoufalej proč proč proč
 // jenom tohle vážne něco proč tohle je tak moc už na mě
