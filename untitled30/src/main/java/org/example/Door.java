@@ -14,6 +14,7 @@ public class Door {
         Employee employee = dbConnect.getEmployeeByChipCode(chipCode);
         if (employee != null) {
             System.out.println("Dveře se otevřely pro zaměstnance: " + employee.getName());
+            dbConnect.logDoorAction(employee.getName(), "Otevřeno");
             doorOpen = true;
             return true;
         } else {
@@ -26,6 +27,7 @@ public class Door {
     public void closeDoor() {
         if (doorOpen) {
             System.out.println("Dveře se zavřely.");
+            dbConnect.logDoorAction("Unknown", "Zavřeno");
             doorOpen = false;
         } else {
             System.out.println("Dveře jsou již zavřené.");
