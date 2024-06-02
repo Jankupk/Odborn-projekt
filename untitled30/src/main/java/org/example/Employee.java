@@ -4,11 +4,13 @@ public class Employee {
     private String name;
     private String chipDate;
     private String chipCode;
+    private String rank;
 
-    public Employee(String name, String chipDate, String chipCode) {
+    public Employee(String name, String chipDate, String chipCode, String rank) {
         this.name = name;
         this.chipDate = chipDate;
         this.chipCode = chipCode;
+        this.rank = rank;
     }
 
     public String getName() {
@@ -34,14 +36,12 @@ public class Employee {
     public void setChipCode(String chipCode) {
         this.chipCode = chipCode;
     }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
+    }
 }
-
-
-
-
-
-
-
-
-
-
